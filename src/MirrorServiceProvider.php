@@ -1,60 +1,72 @@
 <?php
 
-namespace Snowbuilds\Mirror;
+namespace SnowBuilds\Mirror;
 
+use Faker\Factory;
+use Faker\Generator;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
+use SnowBuilds\Mirror\Console\SyncMatrix;
+use SnowBuilds\Mirror\Faker\FormatProvider;
 
 class MirrorServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap the application services.
+     * Register the package's services.
      */
-    public function boot()
+    public function register(): void
     {
-        /*
-         * Optional methods to load your package assets
-         */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-mirror');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-mirror');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->app->singleton(Mirror::class);
+    }
 
+    /**
+     * Bootstrap the package's services.
+     */
+    public function boot(): void
+    {
+        $this->registerCommands();
+        $this->registerPublishing();
+    }
+
+    /**
+     * Register the package's commands.
+     */
+    protected function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SyncMatrix::class,
+            ]);
+        }
+    }
+
+    protected function registerPublishing()
+    {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('laravel-mirror.php'),
+                __DIR__.'/../config/config.php' => config_path('mirror.php'),
             ], 'config');
 
-            // Publishing the views.
-            /*$this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-mirror'),
-            ], 'views');*/
-
-            // Publishing assets.
-            /*$this->publishes([
-                __DIR__.'/../resources/assets' => public_path('vendor/laravel-mirror'),
-            ], 'assets');*/
-
-            // Publishing the translation files.
-            /*$this->publishes([
-                __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-mirror'),
-            ], 'lang');*/
-
-            // Registering package commands.
-            // $this->commands([]);
+            $this->publishes([
+                __DIR__.'/../database/migrations/create_recommendation_tables.php.stub' => $this->getMigrationFileName('create_recommendation_tables.php'),
+            ], 'mirror-migrations');
         }
     }
 
     /**
-     * Register the application services.
+     * Returns existing migration file if found, else uses the current timestamp.
      */
-    public function register()
+    protected function getMigrationFileName(string $migrationFileName): string
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-mirror');
+        $timestamp = date('Y_m_d_His');
 
-        // Register the main class to use with the facade
-        $this->app->singleton('laravel-mirror', function () {
-            return new Mirror;
-        });
+        $filesystem = $this->app->make(Filesystem::class);
+
+        return Collection::make([$this->app->databasePath().DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR])
+            ->flatMap(fn ($path) => $filesystem->glob($path.'*_'.$migrationFileName))
+            ->push($this->app->databasePath()."/migrations/{$timestamp}_{$migrationFileName}")
+            ->first();
     }
+
 }

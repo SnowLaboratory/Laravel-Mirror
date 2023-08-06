@@ -1,8 +1,21 @@
 <?php
 
-namespace Snowbuilds\Mirror;
+namespace SnowBuilds\Mirror;
 
-class Mirror
+use Illuminate\Support\Facades\Facade;
+
+/**
+ * @see \SnowBuilds\Mirror\Skeleton\SkeletonClass
+ */
+class Mirror extends Facade
 {
-    // Build your next great package.
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return MirrorManager::class;
+    }
 }

@@ -15,6 +15,10 @@ You can install the package via composer:
 composer require snowbuilds/laravel-mirror
 ```
 
+```bash
+php artisan vendor:publish --provider="SnowBuilds\Mirror\MirrorServiceProvider"
+```
+
 ## Usage
 
 ```php

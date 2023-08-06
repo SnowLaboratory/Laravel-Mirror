@@ -16,21 +16,31 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
-        "illuminate/support": "^8.0"
+        "php": "^8.1",
+        "illuminate/container": "^10.15|^11.0",
+        "illuminate/console": "^10.15|^11.0",
+        "illuminate/contracts": "^10.15|^11.0",
+        "illuminate/filesystem": "^10.15|^11.0",
+        "illuminate/pipeline": "^10.15|^11.0",
+        "illuminate/support": "^10.15|^11.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.0",
-        "phpunit/phpunit": "^9.0"
+        "orchestra/testbench": "^8.5.10",
+        "pestphp/pest": "^2.5",
+        "phpstan/phpstan": "^1.10"
     },
     "autoload": {
         "psr-4": {
-            "Snowbuilds\\Mirror\\": "src"
-        }
+            "SnowBuilds\\Mirror\\": "src",
+            "SnowBuilds\\Mirror\\Factories\\": "database/factories/"
+        },
+        "files": [
+            "functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Snowbuilds\\Mirror\\Tests\\": "tests"
+            "SnowBuilds\\Mirror\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -39,15 +49,18 @@
 
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Snowbuilds\\Mirror\\MirrorServiceProvider"
+                "SnowBuilds\\Mirror\\MirrorServiceProvider"
             ],
             "aliases": {
-                "Mirror": "Snowbuilds\\Mirror\\MirrorFacade"
+                "Mirror": "SnowBuilds\\Mirror\\MirrorFacade"
             }
         }
     }
