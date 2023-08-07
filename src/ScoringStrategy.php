@@ -17,9 +17,11 @@ class ScoringStrategy
     protected $query;
     protected $model;
     protected $collection = 'default';
+    public string $key;
 
     public function __construct($key)
     {
+        $this->key = $key;
         try {
             $this->usingModel($key);
         } catch (Throwable $ignore) { }
@@ -81,6 +83,10 @@ class ScoringStrategy
             return call_user_func($this->query, $query);
         }
 
-        return call_user_func([$this->model(), 'recommendable']);
+        if (method_exists($this->model(), 'scopeRecommendable')) {
+            return call_user_func([$this->model(), 'recommendable']);
+        }
+
+        return call_user_func([$this->model(), 'query']);
     }
 }
