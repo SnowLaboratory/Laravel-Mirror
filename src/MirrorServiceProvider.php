@@ -27,6 +27,7 @@ class MirrorServiceProvider extends ServiceProvider
     {
         $this->registerCommands();
         $this->registerPublishing();
+        Mirror::boot();
     }
 
     /**

@@ -7,6 +7,8 @@ use SnowBuilds\Mirror\Models\Recommendation;
 
 trait Recommendations
 {
+    use ScoringStrategies;
+
     public function morphRecommendation($model, $recommendationType=null, $collectionType=null)
     {
         return $this->morphToMany(
@@ -27,6 +29,6 @@ trait Recommendations
 
     public function recommendations(): BelongsToMany
     {
-        return $this->morphRecommendation(static::class, 'default');
+        return $this->morphRecommendation(static::class, collectionType:'default');
     }
 }

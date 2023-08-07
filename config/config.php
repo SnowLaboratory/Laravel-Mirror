@@ -1,22 +1,35 @@
 <?php
 
-/*
- * You can place your custom package configuration in here.
- */
-
-use SnowBuilds\Mirror\Factories\RecommendationFactory;
-use SnowBuilds\Mirror\Models\Recommendation;
-
 return [
+    /**
+     * List of model classes that are comparable.
+     */
+    'comparable' => ['*'],
+
+    /**
+     * Customize the models used internally.
+     */
     'models' => [
-        'recommendation' => Recommendation::class,
+        'recommendation' => \SnowBuilds\Mirror\Models\Recommendation::class,
     ],
+
+    /**
+     * Factories available to use in your project.
+     */
     'factories' => [
-        'recommendation' => RecommendationFactory::class,
+        'recommendation' => \SnowBuilds\Mirror\Factories\RecommendationFactory::class,
     ],
+
+    /**
+     * Customize the table names used internally.
+     */
     'table_names' => [
         'recommendations' => 'recommendations',
     ],
+
+    /**
+     * Customize the columns used internally.
+     */
     'column_names' => [
         'model' => 'model',
         'model_id' => 'model_id',
