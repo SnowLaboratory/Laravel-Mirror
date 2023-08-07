@@ -3,6 +3,7 @@
 namespace SnowBuilds\Mirror;
 
 use Exception;
+use Illuminate\Support\Collection;
 use SnowBuilds\Mirror\Concerns\ScoringAlgorithms;
 use Illuminate\Support\Str;
 use Throwable;
@@ -21,6 +22,11 @@ class MirrorManager
         return $this;
     }
 
+    public function strategies(string $in)
+    {
+        return collect($this->strategies[$in]);
+    }
+
     public function register(string $model, $quiet=false)
     {
         $this->models[$model] = compact('model', 'quiet');
@@ -29,15 +35,9 @@ class MirrorManager
 
     public function boot()
     {
-        $classes = config('mirror.comparable', ['*']);
-        if (data_get($classes, '0', '*') === '*') {
-            foreach ($this->getModelNames() as $class) {
-                $this->register($class, quiet: true);
-            }
-        } else {
-            foreach ($classes as $class) {
-                $this->register($class);
-            }
+        $quiet = $this->registeringAllModels();
+        foreach ($this->models() as $class) {
+            $this->register($class, quiet: $quiet);
         }
 
         foreach($this->models as $model) {
@@ -64,11 +64,28 @@ class MirrorManager
         return $strategy->compare($a, $b);
     }
 
-    private function getModelNames(): array
+    private function registeringAllModels()
     {
-        return collect(array_keys(require('vendor/composer/autoload_classmap.php')))
+        $classes = config('mirror.comparable', ['*']);
+        return data_get($classes, '0', '*') === '*';
+    }
+
+    public function models(): Collection
+    {
+        $classes = config('mirror.comparable', ['*']);
+
+        if (! $this->registeringAllModels()) {
+            return collect($classes);
+        }
+
+        return $this->classMap()
             ->filter(function ($key) {
                 return Str::startsWith($key, 'App\\Models\\');
-            })->toArray();
+            });
+    }
+
+    private function classMap(): Collection
+    {
+        return collect(array_keys(require('vendor/composer/autoload_classmap.php')));
     }
 }

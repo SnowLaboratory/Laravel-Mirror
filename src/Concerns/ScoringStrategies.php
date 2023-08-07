@@ -18,7 +18,7 @@ trait ScoringStrategies
 
     public function registerStrategy(string $key=null): ScoringStrategy
     {
-        return tap(new ScoringStrategy(), function ($strategy) use ($key) {
+        return tap(new ScoringStrategy($key), function ($strategy) use ($key) {
             Mirror::registerStrategy(static::class, $key, $strategy);
         });
     }

@@ -14,5 +14,5 @@ interface Scoring
     /**
      * Define comparison strategies for model.
      */
-    public function registerComparison(string $key):void;
+    public function registerRecommendations():void;
 }

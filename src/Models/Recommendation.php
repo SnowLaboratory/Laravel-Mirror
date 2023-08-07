@@ -16,6 +16,8 @@ class Recommendation extends MorphPivot
 {
     use HasFactory;
 
+    protected $table = 'recommendations';
+
     protected $guarded = [];
 
     protected static function newFactory()
