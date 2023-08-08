@@ -13,7 +13,6 @@ class MirrorManager
     protected $strategies = [];
     protected $models = [];
 
-    use ScoringAlgorithms;
     // Build your next great package.
 
     public function registerStrategy(string $in, string $out, ScoringStrategy $strategy)

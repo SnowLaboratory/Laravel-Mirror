@@ -4,8 +4,10 @@ namespace SnowBuilds\Mirror;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Facade;
+use SnowBuilds\Mirror\Concerns\ScoringAlgorithms;
 use Throwable;
 
 /**
@@ -13,7 +15,10 @@ use Throwable;
  */
 class ScoringStrategy
 {
-    protected $strategy;
+    use ScoringAlgorithms;
+    
+    protected array $comparators;
+    protected array $weights;
     protected $query;
     protected $model;
     protected $collection = 'default';
@@ -22,13 +27,21 @@ class ScoringStrategy
     public function __construct($key)
     {
         $this->key = $key;
+        $this->comparators = [];
+        $this->weights = [];
+
         try {
             $this->usingModel($key);
         } catch (Throwable $ignore) { }
     }
 
-    public function using(string|callable $strategy) {
-        $this->strategy = $strategy;
+    public function using(array|string|callable $comparator) {
+        $this->comparators = array_merge($this->comparators, Arr::wrap($comparator));
+        return $this;
+    }
+
+    public function weight(array|int|float $weight) {
+        $this->weights = array_merge($this->weights, Arr::wrap($weight));
         return $this;
     }
 
@@ -47,7 +60,21 @@ class ScoringStrategy
 
     public function compare(Model $a, Model $b)
     {
-        return App::call($this->strategy, compact('a', 'b'));
+        $sum = 0;
+        $this->weights = empty($this->weights) ? [1] : $this->weights;
+        $totalWeight = array_sum($this->weights);
+
+        if ($totalWeight === 0) {
+            return null;
+        }
+
+        foreach($this->comparators as $key => $comparator) {
+            $weight = data_get($this->weights, $key, 1);
+            $value = App::call($comparator, compact('a', 'b'));
+            $sum += $value * $weight;
+        }
+
+        return $sum / $totalWeight;
     }
 
     public function queued()

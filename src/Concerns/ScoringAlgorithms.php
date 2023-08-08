@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
 use Phpml\Exception\InvalidArgumentException;
 use Phpml\Math\Distance\Euclidean;
+use SnowBuilds\Mirror\Algorithm;
 use SnowBuilds\Mirror\Models\Recommendation;
 
 trait ScoringAlgorithms
@@ -14,70 +15,117 @@ trait ScoringAlgorithms
     /**
      * Get the Hamming ratio between two strings;
      */
-    public static function hamming(string $string1, string $string2, bool $returnDistance = false): float
+    public function hamming(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null): self
     {
-        $a        = str_pad($string1, strlen($string2) - strlen($string1), ' ');
-        $b        = str_pad($string2, strlen($string1) - strlen($string2), ' ');
-        $distance = count(array_diff_assoc(str_split($a), str_split($b)));
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
 
-        if ($returnDistance) {
-            return $distance;
-        }
-        return (strlen($a) - $distance) / strlen($a);
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::hamming($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 
     /**
      * Get the Levenshtein ratio between two strings;
      */
-    public static function levenshtein(string $str1, string $str2)
+    public static function levenshtein(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null)
     {
-        $distance = levenshtein($str1, $str2);
-        return 1 - ($distance / max(strlen($str1), strlen($str2)));
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
+
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::levenshtein($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 
     /**
      * Get the Damerau Levenshtein ratio between two strings;
      */
-    public static function damerauLevenshtein(string $str1, string $str2)
+    public static function damerauLevenshtein(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null)
     {
-        $alg = new DamerauLevenshtein($str1, $str2);
-        return $alg->getRelativeDistance();
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
+
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::damerauLevenshtein($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 
-    public static function jaccard(string $string1, string $string2, string $separator = ','): float
+    public static function jaccard(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null): float
     {
-        $a            = explode($separator, $string1);
-        $b            = explode($separator, $string2);
-        $intersection = array_unique(array_intersect($a, $b));
-        $union        = array_unique(array_merge($a, $b));
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
 
-        return count($intersection) / count($union);
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::jaccard($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 
     /**
      * Find the distance between two points.
      */
-    public static function euclidian(array $point1, array $point2)
+    public static function euclidian(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null)
     {
-        $alg = new Euclidean();
-        $alg->distance($point1, $point2);
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
+
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::euclidian($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 
     /**
      * Normalize array of values based on the min and max.
      */
-    public static function minMaxNorm(array $values, $min = null, $max = null): array
+    public static function minMaxNorm(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null): array
     {
-        $norm = [];
-        $min  = $min ?? min($values);
-        $max  = $max ?? max($values);
+        $weight ??= $propertyB ?? 1;
+        $propertyB ??= $propertyA;
+        $key = "{$propertyA}:{$propertyB}";
 
-        foreach ($values as $value) {
-            $numerator   = $value - $min;
-            $denominator = $max - $min;
-            $minMaxNorm  = $numerator / $denominator;
-            $norm[]      = $minMaxNorm;
-        }
-        return $norm;
+        return $this->using([
+            $key => function ($a, $b) use($propertyA, $propertyB) {
+                $valueA = data_get($a, $propertyA);
+                $valueB = data_get($b, $propertyB);
+                return Algorithm::minMaxNorm($valueA, $valueB);
+            }
+        ])->weight([
+            $key => $weight
+        ]);
     }
 }
