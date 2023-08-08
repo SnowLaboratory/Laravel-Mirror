@@ -1,14 +1,37 @@
 <p align="center"><img width="472" src="/art/laravel-mirror-banner.png" alt="Laravel Mirror Package Logo"></p>
 
+<p align="center">
+    <a href="https://packagist.org/packages/snowbuilds/laravel-mirror">
+        <img src="https://img.shields.io/packagist/v/snowbuilds/laravel-mirror.svg?style=flat-square" alt="Latest Version on Packagist" />
+    </a>
+    <a href="https://packagist.org/packages/snowbuilds/laravel-mirror">
+        <img src="https://img.shields.io/packagist/dt/snowbuilds/laravel-mirror.svg?style=flat-square" alt="Total Downloads" />
+    </a>
+    <a href="#">
+        <img src="https://github.com/SnowLaboratory/Laravel-Mirror/actions/workflows/main.yml/badge.svg" alt="GitHub Actions" />
+    </a>
+</p>
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/snowbuilds/laravel-mirror.svg?style=flat-square)](https://packagist.org/packages/snowbuilds/laravel-mirror)
-[![Total Downloads](https://img.shields.io/packagist/dt/snowbuilds/laravel-mirror.svg?style=flat-square)](https://packagist.org/packages/snowbuilds/laravel-mirror)
-![GitHub Actions](https://github.com/SnowLaboratory/Laravel-Mirror/actions/workflows/main.yml/badge.svg)
 
-Build recommendation engines using pure Laravel and take your blog or web app to the next level!
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Complex Example](#complex-usage)
+- [Relationships](#relationships)
+- [Generate Recommendations](#generate)
+- [Roadmap](#roadmap)
+- [Testing](#testing)
+- [Changelog](#changelog)
+- [Contributing](#contributing)
+- [Security Vulnerabilities](#security)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
 
-Inspired by this [blog post](https://oliverlundquist.com/2019/03/11/recommender-system-with-ml-in-laravel.html)
+<a name="introduction"></a>
+## Introduction
+Laravel Mirror is a quick way to intelligently suggest content to your users. It's great for recommending blog posts, products, recipes, etc. to bring your web app to the next level! Start by registing a recommendation strategy and routinely update recommendations in a CRON job. 
 
+<a name="installation"></a>
 ## Installation
 
 You can install the package via composer:
@@ -21,9 +44,7 @@ composer require "snowbuilds/laravel-mirror:^0.0.1-alpha"
 php artisan vendor:publish --provider="SnowBuilds\Mirror\MirrorServiceProvider"
 ```
 
-## Why use Laravel Mirror
-Laravel Mirror is perfect for quickly scaffolding algorithms for content suggestions. You can suggest related blog posts or products by registering a recommendation strategy. 
-
+<a name="usage"></a>
 ## Usage
 Registering a strategy is as simple as comparing two values. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
 
@@ -43,9 +64,9 @@ class Post extends Model
             });
     }
 }
-
 ```
 
+<a name="complex-usage"></a>
 ### Complex scoring algorithm example
 Anything that returns a number is valid, so if you wanted to suggest Products based on their features, price, categories, etc. You could take a weighted average of the scores for each comparison:
 ```php
@@ -77,7 +98,7 @@ class Product extends Model
 
 ```
 
-
+<a name="relationships"></a>
 ### Relationships
 Once you populate the recommendations table, you can quickly access the recommended models by using the `morphsRecommendation` method. The relationship will order by the highest ranking score:
 
@@ -92,6 +113,7 @@ class User extends Authenticatable
 }
 ```
 
+<a name="generate"></a>
 ### Generating Recommendation Matrix
 Computing recommendations can be resource intensive. Laravel Mirror provides a command for syncing recommendations. After syncing, your recommendation relationships will work:
 
@@ -99,6 +121,7 @@ Computing recommendations can be resource intensive. Laravel Mirror provides a c
 php artisan mirror:sync
 ```
 
+<a name="roadmap"></a>
 ## Roadmap
 - [x] Blazingly Fast!
 - [x] Polymorphic recommendations
@@ -112,34 +135,41 @@ php artisan mirror:sync
 - [ ] More algorithms
 - [ ] More settings
 
-
+<a name="testing"></a>
 ### Testing
 
 ```bash
 composer test
 ```
 
+<a name="changelog"></a>
 ### Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
 
+<a name="contributing"></a>
 ## Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
+<a name="security"></a>
 ### Security
 
-If you discover any security related issues, please email zeb@snowlaboratory.com instead of using the issue tracker.
+If you discover any security related issues, please email dev@snowlaboratory.com instead of using the issue tracker.
 
+## Code of Conduct
+<a name="code-of-conduct"></a>
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+<a name="credits"></a>
 ## Credits
 
 -   [Snow Labs](https://github.com/snowbuilds)
+-   [Inspiration](https://oliverlundquist.com/2019/03/11/recommender-system-with-ml-in-laravel.html)
 -   [All Contributors](../../contributors)
 
+<a name="license"></a>
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Laravel Package Boilerplate
-
-This package was generated using the [Laravel Package Boilerplate](https://laravelpackageboilerplate.com).
