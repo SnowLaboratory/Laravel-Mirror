@@ -14,7 +14,7 @@ Inspired by this [blog post](https://oliverlundquist.com/2019/03/11/recommender-
 You can install the package via composer:
 
 ```bash
-composer require snowbuilds/laravel-mirror
+composer require "snowbuilds/laravel-mirror:^0.0.1-alpha"
 ```
 
 ```bash
