@@ -53,7 +53,7 @@ class Algorithm
     /**
      * Find the distance between two points.
      */
-    public static function euclidian(array $point1, array $point2)
+    public static function euclidean(array $point1, array $point2)
     {
         $alg = new Euclidean();
         $alg->distance($point1, $point2);

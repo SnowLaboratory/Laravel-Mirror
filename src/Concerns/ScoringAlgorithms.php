@@ -92,7 +92,7 @@ trait ScoringAlgorithms
     /**
      * Find the distance between two points.
      */
-    public static function euclidian(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null)
+    public static function euclidean(string $propertyA, string|int|float $propertyB=null, string|int|float $weight=null)
     {
         $weight ??= $propertyB ?? 1;
         $propertyB ??= $propertyA;
@@ -102,7 +102,7 @@ trait ScoringAlgorithms
             $key => function ($a, $b) use($propertyA, $propertyB) {
                 $valueA = data_get($a, $propertyA);
                 $valueB = data_get($b, $propertyB);
-                return Algorithm::euclidian($valueA, $valueB);
+                return Algorithm::euclidean($valueA, $valueB);
             }
         ])->weight([
             $key => $weight
