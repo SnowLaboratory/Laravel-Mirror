@@ -64,6 +64,7 @@ class Post extends Model
 }
 ```
 
+<a name="weighted-averages"></a>
 ### Weighted Averages
 Combining algorithms works too. Here we are using Levenshtein on blog titles and Euclidean on the tags. However, we want similar blog titles to score higher than tags, so we can add weights to either algorithm:
 ```php
@@ -75,6 +76,7 @@ public function registerRecommendations(): void
 }
 ```
 
+<a name="different-properties-in-the-same-calculation"></a>
 ### Different Properties in the Same Calculation
 Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. This is also possible by adding a second parameter to the utility method:
 ```php
@@ -86,7 +88,8 @@ public function registerRecommendations(): void
 }
 ```
 
-## Custom Scoring algorithms
+<a name="custom-scoring-algorithms"></a>
+### Custom Scoring algorithms
 For more advanced applications, the helper utilities are not enough. You can use your own algorithm by passing a closure or function pointer to the `using` method. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
 ```php
 public function registerRecommendations(): void
@@ -98,6 +101,7 @@ public function registerRecommendations(): void
 }
 ```
 
+<a name="combining-weights-with-custom-algithms"></a>
 ### Combining Weights with Custom Algorithms
 If your custom algorithm does not account for weights, you can specify an array of weights. 
 ```php
@@ -115,6 +119,7 @@ public function registerRecommendations(): void
 
 ```
 
+<a name="managing-multiple-algorithms-and-weights"></a>
 ### Managing Multiple Algorithms and Weights
 When using multiple custom algorithms and weights, the code can become hard to read. If you pass an associative array, you can keep track of which algorithms belong to which weights:
 ```php
