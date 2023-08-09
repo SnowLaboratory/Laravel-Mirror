@@ -37,7 +37,7 @@ Laravel Mirror is a quick way to intelligently suggest content to your users. It
 You can install the package via composer:
 
 ```bash
-composer require "snowbuilds/laravel-mirror:^0.0.1-alpha"
+composer require "snowbuilds/laravel-mirror:^0.0.2-alpha"
 ```
 
 ```bash
