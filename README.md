@@ -46,7 +46,7 @@ php artisan vendor:publish --provider="SnowBuilds\Mirror\MirrorServiceProvider"
 
 <a name="usage"></a>
 ## Usage
-Registering a strategy is as simple as comparing two values. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
+Registering a strategy is as simple as comparing two values. We added some utilities for quickly running a comparison between two models. For example getting the Levenshtein ratio between two blog post titles:
 
 ```php
 use SnowBuilds\Mirror\Concerns\Recommendations;
@@ -59,11 +59,83 @@ class Post extends Model
     public function registerRecommendations(): void
     {
         $this->registerStrategy(Post::class)
-            ->using(function ($post1, $post2) {
-                return Mirror::levenshtein($post1->title, $post2->title);
-            });
+            ->levenshtein('title');
     }
 }
+```
+
+<a name="weighted-averages"></a>
+### Weighted Averages
+Combining algorithms works too. Here we are using Levenshtein on blog titles and Euclidean on the tags. However, we want similar blog titles to score higher than tags, so we can add weights to either algorithm:
+```php
+public function registerRecommendations(): void
+{
+    $this->registerStrategy(Post::class)
+        ->levenshtein('title', 2)
+        ->euclidean('tags', 1);
+}
+```
+
+<a name="different-properties-in-the-same-calculation"></a>
+### Different Properties in the Same Calculation
+Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. This is also possible by adding a second parameter to the utility method:
+```php
+public function registerRecommendations(): void
+{
+    $this->registerStrategy(Post::class)
+        ->levenshtein('title', 'name', 2)
+        ->euclidean('tags', 'keywords', 1);
+}
+```
+
+<a name="custom-scoring-algorithms"></a>
+### Custom Scoring algorithms
+For more advanced applications, the helper utilities are not enough. You can use your own algorithm by passing a closure or function pointer to the `using` method. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
+```php
+public function registerRecommendations(): void
+{
+    $this->registerStrategy(Post::class)
+        ->using(function ($a, $b) {
+            return Algorithm::levenshtein($a->name, $b->name);
+        });
+}
+```
+
+<a name="combining-weights-with-custom-algithms"></a>
+### Combining Weights with Custom Algorithms
+If your custom algorithm does not account for weights, you can specify an array of weights. 
+```php
+public function registerRecommendations(): void
+{
+    $this->registerStrategy(Post::class)
+        ->using(function ($a, $b) {
+            return Algorithm::levenshtein($a->title, $b->title);
+        })
+        ->using(function ($a, $b) {
+            return Algorithm::euclidean($a->tags, $b->tags);
+        })
+        ->weights([2,1]);
+}
+
+```
+
+<a name="managing-multiple-algorithms-and-weights"></a>
+### Managing Multiple Algorithms and Weights
+When using multiple custom algorithms and weights, the code can become hard to read. If you pass an associative array, you can keep track of which algorithms belong to which weights:
+```php
+public function registerRecommendations(): void
+{
+    $this->registerStrategy(Post::class)
+        ->using([
+            'titles' => fn ($a, $b) => Algorithm::levenshtein($a->title, $b->title),
+            'tags' => fn ($a, $b) => Algorithm::levenshtein($a->tags, $b->tags),
+        ])
+        ->weights([
+            'titles' => 2,
+            'tags' => 1,
+        ]);
+}
+
 ```
 
 <a name="complex-usage"></a>
@@ -130,7 +202,7 @@ php artisan mirror:sync
 - [x] Sync command
 - [ ] Testing
 - [ ] Programmatically invoke syncing actions
-- [ ] Simplified API for weights and faceted algorithms
+- [x] Simplified API for weights and faceted algorithms
 - [ ] Queueing
 - [ ] More algorithms
 - [ ] More settings
