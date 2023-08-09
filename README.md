@@ -16,7 +16,11 @@
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
-    - [Complex Example](#complex-usage)
+    - [Weighted Averages](#weighted-averages)
+    - [Compare Different Properties](different-properties-in-the-same-calculation)
+    - [Custom Scoring Algorithms](#custom-scoring-algorithms)
+    - [Combining Weights & Custom Algorithms](#combining-weights-with-custom-algorithms)
+    - [Organizing Code](#managing-multiple-algorithms-and-weights)
 - [Relationships](#relationships)
 - [Generate Recommendations](#generate)
 - [Roadmap](#roadmap)
@@ -29,7 +33,7 @@
 
 <a name="introduction"></a>
 ## Introduction
-Laravel Mirror is a quick way to intelligently suggest content to your users. It's great for recommending blog posts, products, recipes, etc. to bring your web app to the next level! Start by registing a recommendation strategy and routinely update recommendations in a CRON job. 
+Bring your user experience to the next level! Laravel Mirror lets you suggest content to your users intelligently.  Recommend blog posts, products, recipes, books, etc. Start by registering a recommendation strategy and routinely updating recommendations in a CRON job. 
 
 <a name="installation"></a>
 ## Installation
@@ -46,7 +50,7 @@ php artisan vendor:publish --provider="SnowBuilds\Mirror\MirrorServiceProvider"
 
 <a name="usage"></a>
 ## Usage
-Registering a strategy is as simple as comparing two values. We added some utilities for quickly running a comparison between two models. For example getting the Levenshtein ratio between two blog post titles:
+Registering a strategy is as simple as comparing two values. We added some utilities for quick scaffolding. For example, recommending blog posts with similar titles:
 
 ```php
 use SnowBuilds\Mirror\Concerns\Recommendations;
@@ -66,7 +70,7 @@ class Post extends Model
 
 <a name="weighted-averages"></a>
 ### Weighted Averages
-Combining algorithms works too. Here we are using Levenshtein on blog titles and Euclidean on the tags. However, we want similar blog titles to score higher than tags, so we can add weights to either algorithm:
+Combining algorithms works too. Here we suggest posts with similar titles and tags. However, we want titles to rank higher than tags, so we add weights as a second argument to the algorithm utility:
 ```php
 public function registerRecommendations(): void
 {
@@ -78,32 +82,40 @@ public function registerRecommendations(): void
 
 <a name="different-properties-in-the-same-calculation"></a>
 ### Different Properties in the Same Calculation
-Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. This is also possible by adding a second parameter to the utility method:
+Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. For example, user's should see posts based on their biography and followed communities. Tags that match This is also possible by adding a second parameter to the utility method:
 ```php
-public function registerRecommendations(): void
+class User extends Model
 {
-    $this->registerStrategy(Post::class)
-        ->levenshtein('title', 'name', 2)
-        ->euclidean('tags', 'keywords', 1);
+    use Recommendations;
+
+    public function registerRecommendations(): void
+    {
+        $this->registerStrategy(Post::class)
+            ->levenshtein('biography', 'title', 1) // compare biography to post title
+            ->euclidean('communities', 'tags', 3); // compare communities to post tags
+    }
 }
 ```
 
 <a name="custom-scoring-algorithms"></a>
 ### Custom Scoring algorithms
-For more advanced applications, the helper utilities are not enough. You can use your own algorithm by passing a closure or function pointer to the `using` method. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
+When the helper utilities are insufficient, you can invoke custom algorithms using the `using` method. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
 ```php
-public function registerRecommendations(): void
+class User extends Model
 {
-    $this->registerStrategy(Post::class)
-        ->using(function ($a, $b) {
-            return Algorithm::levenshtein($a->name, $b->name);
-        });
+    public function registerRecommendations(): void
+    {
+        $this->registerStrategy(Post::class)
+            ->using(function (User $a, Post $b) {
+                return Algorithm::levenshtein($a->name, $b->name);
+            });
+    }
 }
 ```
 
-<a name="combining-weights-with-custom-algithms"></a>
+<a name="combining-weights-with-custom-algorithms"></a>
 ### Combining Weights with Custom Algorithms
-If your custom algorithm does not account for weights, you can specify an array of weights. 
+You can specify an array of weights when combining custom algorithms too. The weights are applied in the order that the algorithm was registered:
 ```php
 public function registerRecommendations(): void
 {
@@ -121,7 +133,7 @@ public function registerRecommendations(): void
 
 <a name="managing-multiple-algorithms-and-weights"></a>
 ### Managing Multiple Algorithms and Weights
-When using multiple custom algorithms and weights, the code can become hard to read. If you pass an associative array, you can keep track of which algorithms belong to which weights:
+The code is hard to read when using multiple custom algorithms and weights. If you use an associative array, you can keep your algorithms and weights organized:
 ```php
 public function registerRecommendations(): void
 {
@@ -138,41 +150,10 @@ public function registerRecommendations(): void
 
 ```
 
-<a name="complex-usage"></a>
-### Complex scoring algorithm example
-Anything that returns a number is valid, so if you wanted to suggest Products based on their features, price, categories, etc. You could take a weighted average of the scores for each comparison:
-```php
-use SnowBuilds\Mirror\Concerns\Recommendations;
-use SnowBuilds\Mirror\Mirror;
-
-class Product extends Model
-{
-    use Recommendations;
-
-    public function registerRecommendations(): void
-    {
-        $this->registerStrategy(Product::class)
-            ->using(function ($a, $b) {
-                $aFeatures = implode('', get_object_vars($a->features));
-                $bFeatures = implode('', get_object_vars($b->features));
-
-                return array_sum([
-                    Mirror::hamming($aFeatures, $bFeatures) * config('weights.feature'),
-                    Mirror::euclidean(
-                      Mirror::minMaxNorm([$a->price], 0, config('ranges.maxPrice')),
-                      Mirror::minMaxNorm([$b->price], 0, config('ranges.maxPrice'))
-                    ) * config('weights.price')),
-                    Mirror::jaccard($a->categories, $b->categories) * config('weights.category'))
-                ]) / (config('weights.feature') + config('weights.price') + config('weights.category'));
-            });
-    }
-}
-
-```
 
 <a name="relationships"></a>
 ### Relationships
-Once you populate the recommendations table, you can quickly access the recommended models by using the `morphsRecommendation` method. The relationship will order by the highest ranking score:
+You can define a relationship between the model and the suggested content using the `morphsRecommendation` method. The relationship will order by the highest ranking score:
 
 ```php
 class User extends Authenticatable
@@ -187,10 +168,21 @@ class User extends Authenticatable
 
 <a name="generate"></a>
 ### Generating Recommendation Matrix
-Computing recommendations can be resource intensive. Laravel Mirror provides a command for syncing recommendations. After syncing, your recommendation relationships will work:
+Calculating recommendations is resource-intensive. Laravel Mirror provides a command for syncing recommendations. After syncing, your recommendation relationships will work:
 
 ```bash
 php artisan mirror:sync
+```
+
+In production, this should be a CRON job or registered in the Laravel kernel.
+```php
+class Kernel extends ConsoleKernel
+{
+    protected function schedule(Schedule $schedule): void
+    {
+        $schedule->command('mirror:sync')->daily();
+    }
+}
 ```
 
 <a name="roadmap"></a>
@@ -217,7 +209,7 @@ composer test
 <a name="changelog"></a>
 ### Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
+Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 <a name="contributing"></a>
 ## Contributing
@@ -227,7 +219,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 <a name="security"></a>
 ### Security
 
-If you discover any security related issues, please email dev@snowlaboratory.com instead of using the issue tracker.
+If you discover any security-related issues, please email dev@snowlaboratory.com instead of using the issue tracker.
 
 ## Code of Conduct
 <a name="code-of-conduct"></a>
@@ -238,7 +230,7 @@ In order to ensure that the Laravel community is welcoming to all, please review
 ## Credits
 
 -   [Snow Labs](https://github.com/snowbuilds)
--   [Inspiration](https://oliverlundquist.com/2019/03/11/recommender-system-with-ml-in-laravel.html)
+-   [Inspiration for Laravel Mirror](https://oliverlundquist.com/2019/03/11/recommender-system-with-ml-in-laravel.html)
 -   [All Contributors](../../contributors)
 
 <a name="license"></a>
