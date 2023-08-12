@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Traits\Macroable;
 use SnowBuilds\Mirror\Concerns\ScoringAlgorithms;
 use Throwable;
 
@@ -15,7 +15,13 @@ use Throwable;
  */
 class ScoringStrategy
 {
-    use ScoringAlgorithms;
+    use ScoringAlgorithms {
+        ScoringAlgorithms::__call as algorithmCall;
+    }
+
+    use Macroable {
+        Macroable::__call as macroCall;
+    }
     
     protected array $comparators;
     protected array $weights;
@@ -79,11 +85,13 @@ class ScoringStrategy
 
     public function queued()
     {
+        throw new Exception('Feature not implemented');
         return $this;
     }
 
     public function nonQueued()
     {
+        throw new Exception('Feature not implemented');
         return $this;
     }
 
@@ -115,5 +123,16 @@ class ScoringStrategy
         }
 
         return call_user_func([$this->model(), 'query']);
+    }
+
+    public function __call($method, $parameters)
+    {
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $parameters);
+        }
+
+        return $this->algorithmCall($method, $parameters);
+        // $this->__macroable_call($method, $parameters);
+        // $this->__
     }
 }

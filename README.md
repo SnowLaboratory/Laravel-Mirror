@@ -21,6 +21,7 @@
     - [Custom Scoring Algorithms](#custom-scoring-algorithms)
     - [Combining Weights & Custom Algorithms](#combining-weights-with-custom-algorithms)
     - [Organizing Code](#managing-multiple-algorithms-and-weights)
+    - [Macros](#macros-extracting-algorithms)
 - [Relationships](#relationships)
 - [Generate Recommendations](#generate)
 - [Roadmap](#roadmap)
@@ -71,6 +72,7 @@ class Post extends Model
 <a name="weighted-averages"></a>
 ### Weighted Averages
 Combining algorithms works too. Here we suggest posts with similar titles and tags. However, we want titles to rank higher than tags, so we add weights as a second argument to the algorithm utility:
+
 ```php
 public function registerRecommendations(): void
 {
@@ -83,6 +85,7 @@ public function registerRecommendations(): void
 <a name="different-properties-in-the-same-calculation"></a>
 ### Different Properties in the Same Calculation
 Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. For example, user's should see posts based on their biography and followed communities. Tags that match This is also possible by adding a second parameter to the utility method:
+
 ```php
 class User extends Model
 {
@@ -100,6 +103,7 @@ class User extends Model
 <a name="custom-scoring-algorithms"></a>
 ### Custom Scoring algorithms
 When the helper utilities are insufficient, you can invoke custom algorithms using the `using` method. The first value, `$a`, is the model that has recommendations, and the second value, `$b`, is the model being suggested:
+
 ```php
 class User extends Model
 {
@@ -116,6 +120,7 @@ class User extends Model
 <a name="combining-weights-with-custom-algorithms"></a>
 ### Combining Weights with Custom Algorithms
 You can specify an array of weights when combining custom algorithms too. The weights are applied in the order that the algorithm was registered:
+
 ```php
 public function registerRecommendations(): void
 {
@@ -134,6 +139,7 @@ public function registerRecommendations(): void
 <a name="managing-multiple-algorithms-and-weights"></a>
 ### Managing Multiple Algorithms and Weights
 The code is hard to read when using multiple custom algorithms and weights. If you use an associative array, you can keep your algorithms and weights organized:
+
 ```php
 public function registerRecommendations(): void
 {
@@ -147,9 +153,33 @@ public function registerRecommendations(): void
             'tags' => 1,
         ]);
 }
-
 ```
 
+<a name="macros-extracting-algorithms"></a>
+### Macros - Extracting Algorithms
+When your custom algorithm is too cumbersome you can extract it into a macro. We use an internal utility for registering algorithms, which you are free to use in your macros:
+
+```php
+// ServiceProvider.php
+ScoringStrategy::macro('doCustom', function (...$args) {
+  return $this->registerAlgorithm(
+    fn($a, $b) => Algorithm::custom($a, $b),
+    ...$args
+  );
+});
+
+// Model.php
+class User extends Model 
+{
+    public function registerRecommendations(): void
+    {
+        $this->registerStrategy(User::class)
+            ->euclidean('tags')
+            ->doCustom('field1', 'field2', 42)
+            ->levenshtein('title');
+    }
+}
+```
 
 <a name="relationships"></a>
 ### Relationships

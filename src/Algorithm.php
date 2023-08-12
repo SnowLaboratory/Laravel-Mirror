@@ -2,11 +2,14 @@
 
 namespace SnowBuilds\Mirror;
 
+use Illuminate\Support\Traits\Macroable;
 use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
 use Phpml\Math\Distance\Euclidean;
 
 class Algorithm
 {
+    use Macroable;
+    
     /**
      * Get the Hamming ratio between two strings;
      */

@@ -6,6 +6,12 @@ return [
      */
     'comparable' => ['*'],
 
+    'algorithms' => [
+        'words' => 'levenshtein',
+        'lists' => 'euclidean',
+        'numbers' => 'minMaxNorm',
+    ],
+
     /**
      * Customize the models used internally.
      */
