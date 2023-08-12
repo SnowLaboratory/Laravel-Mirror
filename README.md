@@ -42,7 +42,7 @@ Bring your user experience to the next level! Laravel Mirror lets you suggest co
 You can install the package via composer:
 
 ```bash
-composer require "snowbuilds/laravel-mirror:^0.0.2-alpha"
+composer require "snowbuilds/laravel-mirror:^0.0.3-alpha"
 ```
 
 ```bash
@@ -161,9 +161,9 @@ When your custom algorithm is too cumbersome you can extract it into a macro. We
 
 ```php
 // ServiceProvider.php
-ScoringStrategy::macro('doCustom', function (...$args) {
+ScoringStrategy::macro('huggingFace', function (...$args) {
   return $this->registerAlgorithm(
-    fn($a, $b) => Algorithm::custom($a, $b),
+    fn($a, $b) => HuggingFace::invokeEmbedding($a, $b),
     ...$args
   );
 });
@@ -174,9 +174,9 @@ class User extends Model
     public function registerRecommendations(): void
     {
         $this->registerStrategy(User::class)
-            ->euclidean('tags')
-            ->doCustom('field1', 'field2', 42)
-            ->levenshtein('title');
+            ->euclidean('follewers')
+            ->huggingFace('activity')
+            ->levenshtein('bio');
     }
 }
 ```
