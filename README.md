@@ -34,7 +34,7 @@
 
 <a name="introduction"></a>
 ## Introduction
-Bring your user experience to the next level! Laravel Mirror lets you suggest content to your users intelligently.  Recommend blog posts, products, recipes, books, etc. Start by registering a recommendation strategy and routinely updating recommendations in a CRON job. 
+Bring your user experience to the next level! Laravel Mirror lets you suggest content to your users intelligently!  Easily recommend blog posts, products, recipes, books, etc., with pure PHP! Start by registering a recommendation strategy and routinely updating recommendations in a CRON job! 
 
 <a name="installation"></a>
 ## Installation
@@ -51,7 +51,7 @@ php artisan vendor:publish --provider="SnowBuilds\Mirror\MirrorServiceProvider"
 
 <a name="usage"></a>
 ## Usage
-Registering a strategy is as simple as comparing two values. We added some utilities for quick scaffolding. For example, recommending blog posts with similar titles:
+Registering a strategy is as simple as comparing two values! We added some utilities for convenience. For example, recommending blog posts with similar titles:
 
 ```php
 use SnowBuilds\Mirror\Concerns\Recommendations;
@@ -71,7 +71,7 @@ class Post extends Model
 
 <a name="weighted-averages"></a>
 ### Weighted Averages
-Combining algorithms works too. Here we suggest posts with similar titles and tags. However, we want titles to rank higher than tags, so we add weights as a second argument to the algorithm utility:
+It is possible to combine algorithms! For example, suggesting posts with similar titles and tags. Adding weights will give fields precedence. Larger numbers have higher precedence. We made the title field score higher in a recommendation engine than the tags:
 
 ```php
 public function registerRecommendations(): void
@@ -84,7 +84,7 @@ public function registerRecommendations(): void
 
 <a name="different-properties-in-the-same-calculation"></a>
 ### Different Properties in the Same Calculation
-Sometimes the property name is not the same for different models. Or you may want to compare different columns across the same model. For example, user's should see posts based on their biography and followed communities. Tags that match This is also possible by adding a second parameter to the utility method:
+You can add a second parameter to the utility method when comparing properties with different names. For example, users should see posts based on their biography and followed communities:
 
 ```php
 class User extends Model
@@ -119,7 +119,7 @@ class User extends Model
 
 <a name="combining-weights-with-custom-algorithms"></a>
 ### Combining Weights with Custom Algorithms
-You can specify an array of weights when combining custom algorithms too. The weights are applied in the order that the algorithm was registered:
+Weights can also be applied to custom algorithms. The weights are applied in the order that the algorithm was registered.  Our custom title comparator will take precedence over our tag comparator:
 
 ```php
 public function registerRecommendations(): void
@@ -138,7 +138,7 @@ public function registerRecommendations(): void
 
 <a name="managing-multiple-algorithms-and-weights"></a>
 ### Managing Multiple Algorithms and Weights
-The code is hard to read when using multiple custom algorithms and weights. If you use an associative array, you can keep your algorithms and weights organized:
+The code becomes hard to read when using multiple custom algorithms and weights. If you use an associative array, you can keep your algorithms and weights organized:
 
 ```php
 public function registerRecommendations(): void
@@ -157,7 +157,7 @@ public function registerRecommendations(): void
 
 <a name="macros-extracting-algorithms"></a>
 ### Macros - Extracting Algorithms
-When your custom algorithm is too cumbersome you can extract it into a macro. We use an internal utility for registering algorithms, which you are free to use in your macros:
+When your custom algorithm is too cumbersome, you can extract it into a macro. We use an internal utility for registering algorithms, which you are free to use in your macros.  This will create a clean utility API `->huggingFace` for our user model:
 
 ```php
 // ServiceProvider.php
@@ -182,8 +182,8 @@ class User extends Model
 ```
 
 <a name="relationships"></a>
-### Relationships
-You can define a relationship between the model and the suggested content using the `morphsRecommendation` method. The relationship will order by the highest ranking score:
+## Relationships
+You can define a relationship between the model and the suggested content using the `morphsRecommendation` method. The content is ordered by the most suggested content:
 
 ```php
 class User extends Authenticatable
@@ -197,8 +197,8 @@ class User extends Authenticatable
 ```
 
 <a name="generate"></a>
-### Generating Recommendation Matrix
-Calculating recommendations is resource-intensive. Laravel Mirror provides a command for syncing recommendations. After syncing, your recommendation relationships will work:
+## Generating Recommendation Matrix
+Calculating recommendations is resource-intensive. Laravel Mirror provides a command for syncing recommendations. After syncing, the recommendations are stored in the database and you will be able to fetch related suggestions:
 
 ```bash
 php artisan mirror:sync
